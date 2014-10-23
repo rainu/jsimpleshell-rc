@@ -108,4 +108,36 @@ public class ConnectorTest {
 
 		assertEquals(message, msg.getMessage());
 	}
+
+	@Test
+	public void clientToServerMultiMessage() throws IOException{
+		final String message = "Hello World!";
+
+		Connector serverConnector = new Connector(server);
+		Connector clientConnector = new Connector(client);
+
+		for(int i=0; i < 10; i++) {
+			clientConnector.send(new Message(message));
+		}
+		for(int i=0; i < 10; i++) {
+			Message msg = serverConnector.receive();
+			assertEquals(message, msg.getMessage());
+		}
+	}
+
+	@Test
+	public void serverToClientMultiMessage() throws IOException{
+		final String message = "Hello World!";
+
+		Connector serverConnector = new Connector(server);
+		Connector clientConnector = new Connector(client);
+
+		for(int i=0; i < 10; i++) {
+			serverConnector.send(new Message(message));
+		}
+		for(int i=0; i < 10; i++) {
+			Message msg = clientConnector.receive();
+			assertEquals(message, msg.getMessage());
+		}
+	}
 }

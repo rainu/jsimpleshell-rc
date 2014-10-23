@@ -16,6 +16,9 @@ import de.raysha.jsimpleshell.remote.serialize.MessageSerializer;
 public class Connector {
 	protected static final int BUFFER_SIZE = 8096;
 
+	private final Object sendMonitor = new Object();
+	private final Object receiveMonitor = new Object();
+
 	private final Socket socket;
 	private final MessageSerializer serializer = new MessageSerializer();
 
@@ -30,7 +33,7 @@ public class Connector {
 	 * @throws IOException If an error occurs while sending the message.
 	 */
 	public void send(Message message) throws IOException{
-		synchronized (socket) {
+		synchronized (sendMonitor) {
 			final String toSend = serializer.serialize(message);
 
 			byte[] length = ByteBuffer.allocate(4).putInt(toSend.length()).array();
@@ -50,8 +53,7 @@ public class Connector {
 	 * @throws IOException If an error occurs while receiving a message.
 	 */
 	public Message receive() throws IOException{
-		synchronized (socket) {
-			byte[] buffer = new byte[BUFFER_SIZE];
+		synchronized (receiveMonitor) {
 			StringBuilder builder = new StringBuilder();
 
 			InputStream in = socket.getInputStream();
@@ -59,6 +61,8 @@ public class Connector {
 			int totalRead = 0;
 
 			while(length > totalRead){
+				byte[] buffer = new byte[length - totalRead];
+
 				int read = in.read(buffer);
 				if(read < 0) {
 					break;

@@ -115,4 +115,36 @@ public class SecureConnectorTest {
 
 		assertEquals(message, msg.getMessage());
 	}
+
+	@Test
+	public void clientToServerMultiMessage() throws Exception{
+		final String message = "Hello World!";
+
+		SecureConnector serverConnector = new SecureConnector(server, secretKey);
+		SecureConnector clientConnector = new SecureConnector(client, secretKey);
+
+		for(int i=0; i < 10; i++) {
+			clientConnector.send(new Message(message));
+		}
+		for(int i=0; i < 10; i++) {
+			Message msg = serverConnector.receive();
+			assertEquals(message, msg.getMessage());
+		}
+	}
+
+	@Test
+	public void serverToClientMultiMessage() throws Exception{
+		final String message = "Hello World!";
+
+		SecureConnector serverConnector = new SecureConnector(server, secretKey);
+		SecureConnector clientConnector = new SecureConnector(client, secretKey);
+
+		for(int i=0; i < 10; i++) {
+			serverConnector.send(new Message(message));
+		}
+		for(int i=0; i < 10; i++) {
+			Message msg = clientConnector.receive();
+			assertEquals(message, msg.getMessage());
+		}
+	}
 }
