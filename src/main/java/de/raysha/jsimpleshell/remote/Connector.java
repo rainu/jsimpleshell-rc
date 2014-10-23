@@ -30,13 +30,15 @@ public class Connector {
 	 * @throws IOException If an error occurs while sending the message.
 	 */
 	public void send(Message message) throws IOException{
-		final String toSend = serializer.serialize(message);
+		synchronized (socket) {
+			final String toSend = serializer.serialize(message);
 
-		byte[] length = ByteBuffer.allocate(4).putInt(toSend.length()).array();
+			byte[] length = ByteBuffer.allocate(4).putInt(toSend.length()).array();
 
-		socket.getOutputStream().write(length);
-		socket.getOutputStream().write(toSend.getBytes());
-		socket.getOutputStream().flush();
+			socket.getOutputStream().write(length);
+			socket.getOutputStream().write(toSend.getBytes());
+			socket.getOutputStream().flush();
+		}
 	}
 
 	/**
@@ -48,26 +50,28 @@ public class Connector {
 	 * @throws IOException If an error occurs while receiving a message.
 	 */
 	public Message receive() throws IOException{
-		byte[] buffer = new byte[BUFFER_SIZE];
-		StringBuilder builder = new StringBuilder();
+		synchronized (socket) {
+			byte[] buffer = new byte[BUFFER_SIZE];
+			StringBuilder builder = new StringBuilder();
 
-		InputStream in = socket.getInputStream();
-		final int length = receiveLength(in);
-		int totalRead = 0;
+			InputStream in = socket.getInputStream();
+			final int length = receiveLength(in);
+			int totalRead = 0;
 
-		while(length > totalRead){
-			int read = in.read(buffer);
-			if(read < 0) {
-				break;
+			while(length > totalRead){
+				int read = in.read(buffer);
+				if(read < 0) {
+					break;
+				}
+
+				totalRead += read;
+
+				builder.append(new String(buffer, 0, read));
 			}
 
-			totalRead += read;
-
-			builder.append(new String(buffer, 0, read));
+			final Message message = serializer.deserialize(builder.toString());
+			return message;
 		}
-
-		final Message message = serializer.deserialize(builder.toString());
-		return message;
 	}
 
 	private int receiveLength(InputStream in) throws IOException {
