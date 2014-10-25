@@ -11,17 +11,24 @@ import de.raysha.jsimpleshell.remote.Connector;
  *
  */
 public class Message {
+	private final long messageType;
 	private final String message;
 	private final byte[] rawMessage;
 
-	public Message(String message) {
+	public Message(long typeId, String message) {
+		this.messageType = typeId;
 		this.message = message;
 		this.rawMessage = null;
 	}
 
-	public Message(byte[] message) {
+	public Message(long typeId, byte[] message) {
+		this.messageType = typeId;
 		this.message = null;
 		this.rawMessage = message;
+	}
+
+	public long getMessageType() {
+		return messageType;
 	}
 
 	public String getMessage() {

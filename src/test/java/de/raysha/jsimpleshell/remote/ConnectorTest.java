@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.raysha.jsimpleshell.remote.model.Message;
+import de.raysha.jsimpleshell.remote.model.RawMessage;
 
 public class ConnectorTest {
 	private static Socket server;
@@ -64,7 +65,7 @@ public class ConnectorTest {
 		Connector serverConnector = new Connector(server);
 		Connector clientConnector = new Connector(client);
 
-		clientConnector.send(new Message(message));
+		clientConnector.send(new RawMessage(message));
 		Message msg = serverConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -77,7 +78,7 @@ public class ConnectorTest {
 		Connector serverConnector = new Connector(server);
 		Connector clientConnector = new Connector(client);
 
-		serverConnector.send(new Message(message));
+		serverConnector.send(new RawMessage(message));
 		Message msg = clientConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -90,7 +91,7 @@ public class ConnectorTest {
 		Connector serverConnector = new Connector(server);
 		Connector clientConnector = new Connector(client);
 
-		clientConnector.send(new Message(message));
+		clientConnector.send(new RawMessage(message));
 		Message msg = serverConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -103,7 +104,7 @@ public class ConnectorTest {
 		Connector serverConnector = new Connector(server);
 		Connector clientConnector = new Connector(client);
 
-		serverConnector.send(new Message(message));
+		serverConnector.send(new RawMessage(message));
 		Message msg = clientConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -117,7 +118,7 @@ public class ConnectorTest {
 		Connector clientConnector = new Connector(client);
 
 		for(int i=0; i < 10; i++) {
-			clientConnector.send(new Message(message));
+			clientConnector.send(new RawMessage(message));
 		}
 		for(int i=0; i < 10; i++) {
 			Message msg = serverConnector.receive();
@@ -133,7 +134,7 @@ public class ConnectorTest {
 		Connector clientConnector = new Connector(client);
 
 		for(int i=0; i < 10; i++) {
-			serverConnector.send(new Message(message));
+			serverConnector.send(new RawMessage(message));
 		}
 		for(int i=0; i < 10; i++) {
 			Message msg = clientConnector.receive();

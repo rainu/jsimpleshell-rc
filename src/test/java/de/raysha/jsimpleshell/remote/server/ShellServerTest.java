@@ -7,7 +7,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.raysha.jsimpleshell.remote.Connector;
-import de.raysha.jsimpleshell.remote.model.Message;
+import de.raysha.jsimpleshell.remote.model.RawMessage;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
 
 @Ignore("At the moment this is a playground!")
@@ -29,7 +29,7 @@ public class ShellServerTest {
 				try {
 					Connector client = new Connector(new Socket("localhost", port));
 					for(int i=0; i < 10; i++){
-						client.send(new Message("CLIENT1: " + i));
+						client.send(new RawMessage("CLIENT1: " + i));
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -44,7 +44,7 @@ public class ShellServerTest {
 				try {
 					Connector client = new Connector(new Socket("localhost", port));
 					for(int i=0; i < 10; i++){
-						client.send(new Message("CLIENT2: " + i));
+						client.send(new RawMessage("CLIENT2: " + i));
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block

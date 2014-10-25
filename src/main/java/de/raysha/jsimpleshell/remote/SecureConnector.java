@@ -118,7 +118,7 @@ public class SecureConnector extends Connector {
 			throw new IllegalStateException(e);
 		}
 
-		return new Message(encrypted);
+		return new Message(message.getMessageType(), encrypted);
 	}
 
 	@Override
@@ -136,6 +136,6 @@ public class SecureConnector extends Connector {
 			throw new IllegalStateException(e);
 		}
 
-		return new Message(decrypted);
+		return new Message(message.getMessageType(), decrypted);
 	}
 }

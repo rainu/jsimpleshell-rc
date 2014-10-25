@@ -1,12 +1,13 @@
 package de.raysha.jsimpleshell.remote.serialize;
 
 import java.net.Socket;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
 import de.raysha.jsimpleshell.remote.model.Message;
+import de.raysha.jsimpleshell.remote.model.RawMessage;
 
 /**
  * This class is responsible for de/serialize {@link Message}s to make it
@@ -15,6 +16,11 @@ import de.raysha.jsimpleshell.remote.model.Message;
  * @author rainu
  */
 public class MessageSerializer {
+	@SuppressWarnings("serial")
+	private static final Map<Long, Class<? extends Message>> cataloge = new HashMap<Long, Class<? extends Message>>(){{
+		put(RawMessage.MESSAGE_ID, RawMessage.class);
+	}};
+
 	/**
 	 * Deserialize a {@link Message} which was serialized with {@link MessageSerializer#serialize} before.
 	 *
@@ -22,9 +28,11 @@ public class MessageSerializer {
 	 * @return The corresponding {@link Message}.
 	 */
 	public Message deserialize(String message){
-		byte[] rawMessage = DatatypeConverter.parseBase64Binary(message);
+		String typeHex = message.substring(0, 16);
+		String base64 = message.substring(16);
+		byte[] rawMessage = DatatypeConverter.parseBase64Binary(base64);
 
-		return new Message(rawMessage);
+		return createMessage(Long.parseLong(typeHex, 16), rawMessage);
 	}
 
 	/**
@@ -34,7 +42,18 @@ public class MessageSerializer {
 	 * @return The serialized representation of the {@link Message}-Entity.
 	 */
 	public String serialize(Message message){
+		String typeHex = String.format("%016X", message.getMessageType());
 		String base64 = DatatypeConverter.printBase64Binary(message.getRawMessage());
-		return base64;
+		return typeHex + base64;
+	}
+
+	private Message createMessage(long type, byte[] message){
+		Class<? extends Message> msgClass = cataloge.get(type);
+
+		try {
+			return msgClass.getConstructor(byte[].class).newInstance(message);
+		} catch (Exception e) {
+			return new Message(type, message);
+		}
 	}
 }

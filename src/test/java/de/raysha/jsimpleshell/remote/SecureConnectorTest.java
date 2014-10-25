@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.raysha.jsimpleshell.remote.model.Message;
+import de.raysha.jsimpleshell.remote.model.RawMessage;
 
 public class SecureConnectorTest {
 	private static String secretKey;
@@ -71,7 +72,7 @@ public class SecureConnectorTest {
 		SecureConnector serverConnector = new SecureConnector(server, secretKey);
 		SecureConnector clientConnector = new SecureConnector(client, secretKey);
 
-		clientConnector.send(new Message(message));
+		clientConnector.send(new RawMessage(message));
 		Message msg = serverConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -84,7 +85,7 @@ public class SecureConnectorTest {
 		SecureConnector serverConnector = new SecureConnector(server, secretKey);
 		SecureConnector clientConnector = new SecureConnector(client, secretKey);
 
-		serverConnector.send(new Message(message));
+		serverConnector.send(new RawMessage(message));
 		Message msg = clientConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -97,7 +98,7 @@ public class SecureConnectorTest {
 		SecureConnector serverConnector = new SecureConnector(server, secretKey);
 		SecureConnector clientConnector = new SecureConnector(client, secretKey);
 
-		clientConnector.send(new Message(message));
+		clientConnector.send(new RawMessage(message));
 		Message msg = serverConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -110,7 +111,7 @@ public class SecureConnectorTest {
 		SecureConnector serverConnector = new SecureConnector(server, secretKey);
 		SecureConnector clientConnector = new SecureConnector(client, secretKey);
 
-		serverConnector.send(new Message(message));
+		serverConnector.send(new RawMessage(message));
 		Message msg = clientConnector.receive();
 
 		assertEquals(message, msg.getMessage());
@@ -124,7 +125,7 @@ public class SecureConnectorTest {
 		SecureConnector clientConnector = new SecureConnector(client, secretKey);
 
 		for(int i=0; i < 10; i++) {
-			clientConnector.send(new Message(message));
+			clientConnector.send(new RawMessage(message));
 		}
 		for(int i=0; i < 10; i++) {
 			Message msg = serverConnector.receive();
@@ -140,7 +141,7 @@ public class SecureConnectorTest {
 		SecureConnector clientConnector = new SecureConnector(client, secretKey);
 
 		for(int i=0; i < 10; i++) {
-			serverConnector.send(new Message(message));
+			serverConnector.send(new RawMessage(message));
 		}
 		for(int i=0; i < 10; i++) {
 			Message msg = clientConnector.receive();

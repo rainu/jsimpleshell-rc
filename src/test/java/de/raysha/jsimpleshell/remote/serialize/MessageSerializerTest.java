@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.raysha.jsimpleshell.remote.model.Message;
+import de.raysha.jsimpleshell.remote.model.RawMessage;
 
 public class MessageSerializerTest {
 
@@ -21,7 +22,7 @@ public class MessageSerializerTest {
 	@Test
 	public void serialize(){
 		final String strMessage = "Hello World!";
-		final Message origMessage = new Message(strMessage);
+		final Message origMessage = new RawMessage(strMessage);
 
 		final String outputString = toTest.serialize(origMessage);
 		final Message converted = toTest.deserialize(outputString);
@@ -33,7 +34,7 @@ public class MessageSerializerTest {
 	@Test
 	public void serializeRaw(){
 		final byte[] rawMessage = "Hello World!".getBytes();
-		final Message origMessage = new Message(rawMessage);
+		final Message origMessage = new RawMessage(rawMessage);
 
 		final String outputString = toTest.serialize(origMessage);
 		final Message converted = toTest.deserialize(outputString);
