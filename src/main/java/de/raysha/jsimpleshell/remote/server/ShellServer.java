@@ -2,14 +2,16 @@ package de.raysha.jsimpleshell.remote.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
+import java.security.InvalidKeyException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import de.raysha.jsimpleshell.remote.AbstractServer;
-import de.raysha.jsimpleshell.remote.Connector;
+import javax.crypto.SecretKey;
+
 import de.raysha.lib.jsimpleshell.Shell;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
+import de.raysha.net.scs.AESConnector;
+import de.raysha.net.scs.AESServer;
 
 /**
  * This class establish a server socket and listening for incoming connections.
@@ -18,17 +20,17 @@ import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
  *
  * @author rainu
  */
-public class ShellServer extends AbstractServer {
+public class ShellServer extends AESServer {
 	private final ShellBuilder builder;
 	private ExecutorService executor;
 
-	ShellServer(ShellBuilder builder, int port) throws IOException {
-		super(port);
+	ShellServer(ShellBuilder builder, SecretKey key, int port) throws IOException, InvalidKeyException {
+		super(key, port);
 		this.builder = builder;
 	}
 
-	ShellServer(ShellBuilder builder, ServerSocket socket) {
-		super(socket);
+	ShellServer(ShellBuilder builder, SecretKey key, ServerSocket socket) throws InvalidKeyException {
+		super(key, socket);
 		this.builder = builder;
 	}
 
@@ -45,21 +47,15 @@ public class ShellServer extends AbstractServer {
 	}
 
 	@Override
-	protected void handleNewSocket(Socket newSocket) {
-		//TODO: draft...
-		System.out.println("new socket");
-		final Connector connector = new Connector(newSocket);
+	protected void handleNewConnetion(final AESConnector connector) {
+		ShellSession session = createNewShellSession(connector);
 
-		this.executor.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					while(true)
-						System.out.println("\"" + connector.receive().getMessage() + "\"");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		this.executor.execute(session);
+	}
+
+	private ShellSession createNewShellSession(final AESConnector connector) {
+		synchronized (builder) {
+			return new ShellSession(builder.build(), connector);
+		}
 	}
 }

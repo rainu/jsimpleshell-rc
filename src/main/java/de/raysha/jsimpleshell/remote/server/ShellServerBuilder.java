@@ -2,9 +2,13 @@ package de.raysha.jsimpleshell.remote.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.security.InvalidKeyException;
+
+import javax.crypto.SecretKey;
 
 import de.raysha.lib.jsimpleshell.Shell;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
+import de.raysha.net.scs.AESConnector;
 
 /**
  * This class is responsible for building a {@link ShellServer}.
@@ -15,7 +19,8 @@ public class ShellServerBuilder {
 	private final ServerSettings settings = new ServerSettings();
 
 	public ShellServerBuilder() {
-		settings.setConnectionPoolSize(1);
+		setConnectionPoolSize(1);
+		setPassword("!ThisIsNotASecureKey!");
 	}
 
 	/**
@@ -28,6 +33,30 @@ public class ShellServerBuilder {
 	public ShellServerBuilder setPort(int port){
 		settings.setPort(port);
 		settings.setSocket(null);
+
+		return this;
+	}
+
+	/**
+	 * Set the password for the secure-communication. The client should have the same
+	 * password!
+	 *
+	 * @param password The secure password.
+	 * @return This {@link ShellServerBuilder} instance.
+	 */
+	public ShellServerBuilder setPassword(String password) {
+		return setPassword(AESConnector.initialiseKey(password));
+	}
+
+	/**
+	 * Set the secret key for the secure-communication. The client should have the same
+	 * key!
+	 *
+	 * @param key The secure key.
+	 * @return This {@link ShellServerBuilder} instance.
+	 */
+	public ShellServerBuilder setPassword(SecretKey key) {
+		settings.setSecredKey(key);
 
 		return this;
 	}
@@ -89,16 +118,17 @@ public class ShellServerBuilder {
 	 *
 	 * @return The read-to-use {@link ShellServer}-instance
 	 * @throws IOException If the Server could not be establish.
+	 * @throws InvalidKeyException If the used secure key is invalid.
 	 */
-	public ShellServer build() throws IOException{
+	public ShellServer build() throws IOException, InvalidKeyException{
 		checkPrecondition();
 
 		final ShellServer shellServer;
 
 		if(settings.getSocket() != null){
-			shellServer = new ShellServer(settings.getShell(), settings.getSocket());
+			shellServer = new ShellServer(settings.getShell(), settings.getSecredKey(), settings.getSocket());
 		}else{
-			shellServer = new ShellServer(settings.getShell(), settings.getPort());
+			shellServer = new ShellServer(settings.getShell(), settings.getSecredKey(), settings.getPort());
 		}
 
 		shellServer.setConnectionPoolSize(settings.getConnectionPoolSize());

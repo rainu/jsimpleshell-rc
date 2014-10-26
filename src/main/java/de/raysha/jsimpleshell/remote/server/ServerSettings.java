@@ -2,6 +2,8 @@ package de.raysha.jsimpleshell.remote.server;
 
 import java.net.ServerSocket;
 
+import javax.crypto.SecretKey;
+
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
 
 /**
@@ -14,6 +16,7 @@ class ServerSettings {
 	private ServerSocket socket;
 	private ShellBuilder shell;
 	private int connectionPoolSize;
+	private SecretKey secredKey;
 
 	public void setPort(Integer port) {
 		this.port = port;
@@ -38,5 +41,11 @@ class ServerSettings {
 	}
 	public int getConnectionPoolSize() {
 		return connectionPoolSize;
+	}
+	public SecretKey getSecredKey() {
+		return secredKey;
+	}
+	public void setSecredKey(SecretKey secredKey) {
+		this.secredKey = secredKey;
 	}
 }
