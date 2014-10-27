@@ -9,6 +9,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.raysha.jsimpleshell.remote.model.InputMessage;
+import de.raysha.jsimpleshell.remote.model.MessageCataloge;
+import de.raysha.jsimpleshell.remote.model.PlainSerializableMessage;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
 import de.raysha.net.scs.AESConnector;
 
@@ -31,8 +33,12 @@ public class ShellServerTest {
 			public void run() {
 				try {
 					AESConnector client = buildConnector(port);
-					for(int i=0; i < 10; i++){
-						client.send(new InputMessage("CLIENT1: " + i));
+					client.send(new InputMessage("?helpsadasdasdasd\n"));
+
+					while(true){
+						PlainSerializableMessage message = (PlainSerializableMessage)client.receive();
+						System.out.println(message.getClass());
+						System.out.println(new String(message.getRawValue()));
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -46,9 +52,14 @@ public class ShellServerTest {
 			public void run() {
 				try {
 					AESConnector client = buildConnector(port);
-					for(int i=0; i < 10; i++){
-						client.send(new InputMessage("CLIENT2: " + i));
-					}
+					client.send(new InputMessage("?help\n"));
+
+//					while(true){
+//						PlainSerializableMessage message = (PlainSerializableMessage)client.receive();
+//						System.out.println(message.getClass());
+//						System.out.println(new String(message.getRawValue()));
+//					}
+					client.disconnect();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -72,7 +83,7 @@ public class ShellServerTest {
 
 		AESConnector connector = new AESConnector(new Socket("localhost", port), "secret");
 
-		connector.registerSerializer(InputMessage.class, new InputMessage.Serializer());
+		MessageCataloge.registerCataloge(connector);
 
 		return connector;
 	}

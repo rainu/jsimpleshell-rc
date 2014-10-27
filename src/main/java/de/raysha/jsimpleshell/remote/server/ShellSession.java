@@ -1,11 +1,19 @@
 package de.raysha.jsimpleshell.remote.server;
 
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.Arrays;
 
+import de.raysha.jsimpleshell.remote.model.ErrorMessage;
+import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
+import de.raysha.jsimpleshell.remote.model.InputMessage;
 import de.raysha.jsimpleshell.remote.model.MessageCataloge;
-import de.raysha.jsimpleshell.remote.model.PlainSerializableMessage;
+import de.raysha.jsimpleshell.remote.model.OutputMessage;
 import de.raysha.lib.jsimpleshell.Shell;
+import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
 import de.raysha.net.scs.AbstractConnector;
+import de.raysha.net.scs.model.Message;
 
 /**
  * This class is responsible for a shell session. For each user there is a own session.
@@ -13,27 +21,66 @@ import de.raysha.net.scs.AbstractConnector;
  * @author rainu
  */
 public class ShellSession implements Runnable{
-	private final Shell shell;
+	private final ShellBuilder shellBuilder;
 	private final AbstractConnector connector;
+	private String name;
 
-	public ShellSession(Shell shell, AbstractConnector connector) {
-		this.shell = shell;
+	private Thread inputThread;
+	private Thread ouputThread;
+	private Thread errorThread;
+
+	private PipedOutputStream in;
+	private PipedInputStream out;
+	private PipedInputStream err;
+
+	public ShellSession(ShellBuilder shellBuilder, AbstractConnector connector) {
+		this.shellBuilder = shellBuilder;
 		this.connector = connector;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override
 	public void run() {
-		prepareConnector();
+		Thread.currentThread().setName("ShellSession-" + name);
 
-		//TODO:Start shell (loop-mode)
-		//TODO:If the shell is finished the connection should be closed
-		//TODO:The input/output/error should be forwarded to the shell
+		prepareConnector();
+		final Shell shell;
 
 		try {
-			while(true)
-				System.out.println("\"" + ((PlainSerializableMessage)connector.receive()).getValue() + "\"");
+			shell = buildNewShell();
+		} catch (Exception e) {
+			try {
+				connector.send(new ExceptionMessage("Could not create a new shell session!", e));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return;
+		}
+
+		initializeAndStartThreads();
+
+		try {
+			shell.commandLoop();
 		} catch (IOException e) {
-			//connection lost?!
+			try {
+				connector.send(new ExceptionMessage("The shell-session ends unexpected!", e));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} finally {
+			stopThreads();
+			closePipes();
+		}
+
+		try {
+			connector.disconnect();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -41,4 +88,168 @@ public class ShellSession implements Runnable{
 	private void prepareConnector() {
 		MessageCataloge.registerCataloge(connector);
 	}
+
+	private Shell buildNewShell() throws IOException {
+		out = new PipedInputStream();
+		PipedOutputStream worldOut = new PipedOutputStream();
+		worldOut.connect(out);
+
+		err = new PipedInputStream();
+		PipedOutputStream worldErr = new PipedOutputStream();
+		worldErr.connect(err);
+
+		in = new PipedOutputStream();
+		PipedInputStream worldIn = new PipedInputStream();
+		worldIn.connect(in);
+
+		synchronized (shellBuilder) {
+			shellBuilder.io()
+				.setConsole(worldIn, worldOut)
+				.setError(worldErr);
+
+			return shellBuilder.build();
+		}
+	}
+
+	private void closePipes() {
+		try { in.close(); } catch (IOException e) { }
+		try { out.close(); } catch (IOException e) { }
+		try { err.close(); } catch (IOException e) { }
+	}
+
+	private void initializeAndStartThreads() {
+		this.inputThread = new Thread(inputRunnable, "ShellSession-Input-" + name);
+		this.ouputThread = new Thread(outputRunnable, "ShellSession-Output-" + name);
+		this.errorThread = new Thread(errorRunnable, "ShellSession-Error-" + name);
+
+		this.inputThread.start();
+		this.ouputThread.start();
+		this.errorThread.start();
+	}
+
+	private void stopThreads() {
+		stop(inputThread);
+		stop(ouputThread);
+		stop(errorThread);
+	}
+
+	private void stop(Thread thread){
+		thread.interrupt();
+
+		try {
+			thread.join(2500);
+		} catch (InterruptedException e) { }
+		if(thread.isAlive()){
+			thread.stop();
+		}
+	}
+
+	private Runnable inputRunnable = new Runnable() {
+		@Override
+		public void run() {
+			while(true){
+				final Message message;
+
+				try {
+					message = connector.receive();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break; //connection is closed...
+				}
+
+
+				try {
+					if(message instanceof InputMessage){
+						forwardInput((InputMessage)message);
+					} else {
+						//supported
+						connector.send(new ExceptionMessage(
+								"The incoming message type (" + message.getClass().getName() + ") is not supported",
+								new IllegalArgumentException()));
+					}
+				} catch (IOException e) {
+					//this exception is thrown if a message could not be send to the client
+
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break; //connection is closed...
+				}
+			}
+		}
+
+		private void forwardInput(InputMessage input) throws IOException {
+			try{
+				in.write(input.getRawValue());
+				in.flush();
+			}catch(IOException e){
+				connector.send(new ExceptionMessage("Could not forward user input! Close connection because of brocken stream!", e));
+				connector.disconnect();
+			}
+		}
+	};
+
+	private Runnable outputRunnable = new Runnable() {
+		@Override
+		public void run() {
+			while(true){
+				byte[] readBuffer = new byte[8192];
+				int read;
+				try {
+					read = out.read(readBuffer);
+				} catch (IOException e) {
+					try{
+						connector.send(new ExceptionMessage("Could not forward shell output! Close connection because of brocken stream!", e));
+						connector.disconnect();
+					}catch(IOException e1){
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					e.printStackTrace();
+					break;
+				}
+
+				OutputMessage output = new OutputMessage(Arrays.copyOfRange(readBuffer, 0, read));
+
+				try {
+					connector.send(output);
+				} catch (IOException e) {
+					e.printStackTrace();
+					break; //connection is closed...
+				}
+			}
+		}
+	};
+
+	private Runnable errorRunnable = new Runnable() {
+		@Override
+		public void run() {
+			while(true){
+				byte[] readBuffer = new byte[8192];
+				int read;
+				try {
+					read = err.read(readBuffer);
+				} catch (IOException e) {
+					try{
+						connector.send(new ExceptionMessage("Could not forward shell error! Close connection because of brocken stream!", e));
+						connector.disconnect();
+					}catch(IOException e1){
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					e.printStackTrace();
+					break;
+				}
+
+				ErrorMessage error = new ErrorMessage(Arrays.copyOfRange(readBuffer, 0, read));
+
+				try {
+					connector.send(error);
+				} catch (IOException e) {
+					e.printStackTrace();
+					break; //connection is closed...
+				}
+			}
+		}
+	};
 }

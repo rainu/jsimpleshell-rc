@@ -12,7 +12,11 @@ public class ErrorMessage extends PlainSerializableMessage {
 	private static final long serialVersionUID = 8979975977072628714L;
 
 	public ErrorMessage(String value) {
-		super(value);
+		super(value.getBytes());
+	}
+
+	public ErrorMessage(byte[] rawValue) {
+		super(rawValue);
 	}
 
 	public static class Serializer extends ObjectSerializer<ErrorMessage> {

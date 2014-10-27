@@ -18,6 +18,7 @@ public final class MessageCataloge {
 		connector.registerSerializer(InputMessage.class, new InputMessage.Serializer());
 		connector.registerSerializer(OutputMessage.class, new OutputMessage.Serializer());
 		connector.registerSerializer(ErrorMessage.class, new ErrorMessage.Serializer());
+		connector.registerSerializer(ExceptionMessage.class, new ExceptionMessage.Serializer());
 	}
 
 }

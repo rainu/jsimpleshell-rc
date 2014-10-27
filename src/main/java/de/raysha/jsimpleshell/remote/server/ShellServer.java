@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.security.InvalidKeyException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.crypto.SecretKey;
 
@@ -21,6 +23,7 @@ import de.raysha.net.scs.AESServer;
  * @author rainu
  */
 public class ShellServer extends AESServer {
+	private long sessionCounter = 0;
 	private final ShellBuilder builder;
 	private ExecutorService executor;
 
@@ -54,8 +57,9 @@ public class ShellServer extends AESServer {
 	}
 
 	private ShellSession createNewShellSession(final AESConnector connector) {
-		synchronized (builder) {
-			return new ShellSession(builder.build(), connector);
-		}
+		ShellSession session = new ShellSession(builder, connector);
+		session.setName(String.valueOf(sessionCounter++));
+
+		return session;
 	}
 }

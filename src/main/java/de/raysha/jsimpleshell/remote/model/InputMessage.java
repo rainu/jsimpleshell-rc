@@ -12,7 +12,11 @@ public class InputMessage extends PlainSerializableMessage {
 	private static final long serialVersionUID = 2785116591721482221L;
 
 	public InputMessage(String value) {
-		super(value);
+		super(value.getBytes());
+	}
+
+	public InputMessage(byte[] rawValue) {
+		super(rawValue);
 	}
 
 	public static class Serializer extends ObjectSerializer<InputMessage> {

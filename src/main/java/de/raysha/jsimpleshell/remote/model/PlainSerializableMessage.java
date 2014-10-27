@@ -7,13 +7,13 @@ import de.raysha.net.scs.model.Message;
 public abstract class PlainSerializableMessage implements Message, Serializable {
 	private static final long serialVersionUID = 7377915709114710618L;
 
-	private String value;
+	private byte[] rawValue;
 
-	public PlainSerializableMessage(String value) {
-		this.value = value;
+	public PlainSerializableMessage(byte[] rawValue) {
+		this.rawValue = rawValue;
 	}
 
-	public String getValue() {
-		return value;
+	public byte[] getRawValue() {
+		return rawValue;
 	}
 }
