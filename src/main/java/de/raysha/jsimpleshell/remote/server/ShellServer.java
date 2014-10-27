@@ -5,8 +5,7 @@ import java.net.ServerSocket;
 import java.security.InvalidKeyException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Logger;
 
 import javax.crypto.SecretKey;
 
@@ -23,6 +22,8 @@ import de.raysha.net.scs.AESServer;
  * @author rainu
  */
 public class ShellServer extends AESServer {
+	private static final Logger LOG = Logger.getLogger(ShellServer.class.getName());
+
 	private long sessionCounter = 0;
 	private final ShellBuilder builder;
 	private ExecutorService executor;
@@ -43,15 +44,24 @@ public class ShellServer extends AESServer {
 	}
 
 	@Override
-	public void shutdown() {
-		executor.shutdown();
+	public void start() {
+		LOG.info("Start shell-server.");
 
+		super.start();
+	}
+
+	@Override
+	public void shutdown() {
+		LOG.info("Stop shell-server.");
+
+		executor.shutdown();
 		super.shutdown();
 	}
 
 	@Override
 	protected void handleNewConnetion(final AESConnector connector) {
 		ShellSession session = createNewShellSession(connector);
+		LOG.info("Incoming connection " + connector + ". Assign to shell-session #" + session.getName());
 
 		this.executor.execute(session);
 	}

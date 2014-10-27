@@ -1,9 +1,12 @@
 package de.raysha.jsimpleshell.remote.server;
 
+import static java.util.logging.Level.*;
+
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import de.raysha.jsimpleshell.remote.model.ErrorMessage;
 import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
@@ -20,7 +23,9 @@ import de.raysha.net.scs.model.Message;
  *
  * @author rainu
  */
-public class ShellSession implements Runnable{
+public class ShellSession implements Runnable {
+	private static final Logger LOG = Logger.getLogger(ShellSession.class.getName());
+
 	private final ShellBuilder shellBuilder;
 	private final AbstractConnector connector;
 	private String name;
@@ -42,46 +47,61 @@ public class ShellSession implements Runnable{
 		this.name = name;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	private String logMessage(String message){
+		return "[ShellSession-" + name + "] " + message;
+	}
+
 	@Override
 	public void run() {
-		Thread.currentThread().setName("ShellSession-" + name);
+		try{
+			LOG.info(logMessage("Start shell session."));
+			Thread.currentThread().setName("ShellSession-" + name);
 
-		prepareConnector();
-		final Shell shell;
+			prepareConnector();
+			final Shell shell;
 
-		try {
-			shell = buildNewShell();
-		} catch (Exception e) {
 			try {
-				connector.send(new ExceptionMessage("Could not create a new shell session!", e));
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				shell = buildNewShell();
+			} catch (Exception e) {
+				LOG.log(SEVERE, logMessage("Could not create a new shell session!"), e);
+
+				try {
+					connector.send(new ExceptionMessage("Could not create a new shell session!", e));
+				} catch (IOException e1) {
+					LOG.log(WARNING, logMessage("Could not send exception message to user!"), e1);
+				}
+
+				return;
 			}
-			return;
-		}
 
-		initializeAndStartThreads();
+			initializeAndStartThreads();
 
-		try {
-			shell.commandLoop();
-		} catch (IOException e) {
 			try {
-				connector.send(new ExceptionMessage("The shell-session ends unexpected!", e));
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		} finally {
-			stopThreads();
-			closePipes();
-		}
+				shell.commandLoop();
+			} catch (IOException e) {
+				LOG.log(WARNING, logMessage("The shell-session ends unexpected!"), e);
 
-		try {
-			connector.disconnect();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+				try {
+					connector.send(new ExceptionMessage("The shell-session ends unexpected!", e));
+				} catch (IOException e1) {
+					LOG.log(WARNING, logMessage("Could not send exception message to user!"), e1);
+				}
+			} finally {
+				stopThreads();
+				closePipes();
+			}
+
+			try {
+				connector.disconnect();
+			} catch (IOException e) {
+				LOG.log(FINE, logMessage("An error occurs on disconnecting client!"), e);
+			}
+		}finally{
+			LOG.info(logMessage("Stop shell session."));
 		}
 	}
 
@@ -153,8 +173,7 @@ public class ShellSession implements Runnable{
 				try {
 					message = connector.receive();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOG.log(FINE, logMessage("Could not retrieve message from client!"), e);
 					break; //connection is closed...
 				}
 
@@ -170,9 +189,8 @@ public class ShellSession implements Runnable{
 					}
 				} catch (IOException e) {
 					//this exception is thrown if a message could not be send to the client
+					LOG.log(WARNING, logMessage("Could not send exception message to user!"), e);
 
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 					break; //connection is closed...
 				}
 			}
@@ -202,10 +220,9 @@ public class ShellSession implements Runnable{
 						connector.send(new ExceptionMessage("Could not forward shell output! Close connection because of brocken stream!", e));
 						connector.disconnect();
 					}catch(IOException e1){
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						LOG.log(WARNING, logMessage("Could not send exception message to user!"), e1);
 					}
-					e.printStackTrace();
+
 					break;
 				}
 
@@ -214,7 +231,7 @@ public class ShellSession implements Runnable{
 				try {
 					connector.send(output);
 				} catch (IOException e) {
-					e.printStackTrace();
+					LOG.log(FINE, logMessage("Could not send shell output to client!"), e);
 					break; //connection is closed...
 				}
 			}
@@ -234,10 +251,9 @@ public class ShellSession implements Runnable{
 						connector.send(new ExceptionMessage("Could not forward shell error! Close connection because of brocken stream!", e));
 						connector.disconnect();
 					}catch(IOException e1){
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						LOG.log(WARNING, logMessage("Could not send exception message to user!"), e1);
 					}
-					e.printStackTrace();
+
 					break;
 				}
 
@@ -246,7 +262,7 @@ public class ShellSession implements Runnable{
 				try {
 					connector.send(error);
 				} catch (IOException e) {
-					e.printStackTrace();
+					LOG.log(FINE, logMessage("Could not send shell error to client!"), e);
 					break; //connection is closed...
 				}
 			}

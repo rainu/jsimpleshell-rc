@@ -34,6 +34,9 @@ public class ShellServerTest {
 				try {
 					AESConnector client = buildConnector(port);
 					client.send(new InputMessage("?helpsadasdasdasd\n"));
+					client.send(new InputMessage("?list\n"));
+					client.send(new InputMessage("?list-all\n"));
+					client.send(new InputMessage("?li\t"));
 
 					while(true){
 						PlainSerializableMessage message = (PlainSerializableMessage)client.receive();
