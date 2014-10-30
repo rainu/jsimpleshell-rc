@@ -1,6 +1,6 @@
 package de.raysha.jsimpleshell.remote.model;
 
-import de.raysha.net.scs.AbstractConnector;
+import de.raysha.net.scs.Connector;
 
 /**
  * This class holds the hole message-registry.
@@ -14,11 +14,16 @@ public final class MessageCataloge {
 	 *
 	 * @param connector The target connector.
 	 */
-	public static void registerCataloge(AbstractConnector connector){
+	public static void registerCataloge(Connector connector){
 		connector.registerSerializer(InputMessage.class, new InputMessage.Serializer());
 		connector.registerSerializer(OutputMessage.class, new OutputMessage.Serializer());
 		connector.registerSerializer(ErrorMessage.class, new ErrorMessage.Serializer());
 		connector.registerSerializer(ExceptionMessage.class, new ExceptionMessage.Serializer());
+		connector.registerSerializer(ReadLine.class, new ReadLine.Serializer());
+		connector.registerSerializer(HistoryRequest.class, new HistoryRequest.Serializer());
+		connector.registerSerializer(HistoryResponse.class, new HistoryResponse.Serializer());
+		connector.registerSerializer(CompleteRequest.class, new CompleteRequest.Serializer());
+		connector.registerSerializer(CompleteResponse.class, new CompleteResponse.Serializer());
 	}
 
 }

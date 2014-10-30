@@ -11,8 +11,11 @@ import org.junit.Test;
 import de.raysha.jsimpleshell.remote.model.InputMessage;
 import de.raysha.jsimpleshell.remote.model.MessageCataloge;
 import de.raysha.jsimpleshell.remote.model.PlainSerializableMessage;
+import de.raysha.jsimpleshell.remote.server.ShellServer;
+import de.raysha.jsimpleshell.remote.server.ShellServerBuilder;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
 import de.raysha.net.scs.AESConnector;
+import de.raysha.net.scs.model.Message;
 
 @Ignore("At the moment this is a playground!")
 public class ShellServerTest {
@@ -34,14 +37,10 @@ public class ShellServerTest {
 				try {
 					AESConnector client = buildConnector(port);
 					client.send(new InputMessage("?helpsadasdasdasd\n"));
-					client.send(new InputMessage("?list\n"));
-					client.send(new InputMessage("?list-all\n"));
-					client.send(new InputMessage("?li\t"));
 
 					while(true){
-						PlainSerializableMessage message = (PlainSerializableMessage)client.receive();
+						Message message = client.receive();
 						System.out.println(message.getClass());
-						System.out.println(new String(message.getRawValue()));
 					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block

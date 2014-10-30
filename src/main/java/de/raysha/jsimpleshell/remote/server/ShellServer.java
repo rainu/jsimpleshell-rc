@@ -28,12 +28,12 @@ public class ShellServer extends AESServer {
 	private final ShellBuilder builder;
 	private ExecutorService executor;
 
-	ShellServer(ShellBuilder builder, SecretKey key, int port) throws IOException, InvalidKeyException {
+	protected ShellServer(ShellBuilder builder, SecretKey key, int port) throws IOException, InvalidKeyException {
 		super(key, port);
 		this.builder = builder;
 	}
 
-	ShellServer(ShellBuilder builder, SecretKey key, ServerSocket socket) throws InvalidKeyException {
+	protected ShellServer(ShellBuilder builder, SecretKey key, ServerSocket socket) throws InvalidKeyException {
 		super(key, socket);
 		this.builder = builder;
 	}

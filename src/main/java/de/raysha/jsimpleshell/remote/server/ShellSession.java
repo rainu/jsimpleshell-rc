@@ -3,19 +3,30 @@ package de.raysha.jsimpleshell.remote.server;
 import static java.util.logging.Level.*;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ListIterator;
 import java.util.logging.Logger;
 
+import jline.console.ConsoleReader;
+import jline.console.history.History;
+import jline.console.history.History.Entry;
 import de.raysha.jsimpleshell.remote.model.ErrorMessage;
 import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
+import de.raysha.jsimpleshell.remote.model.HistoryRequest;
+import de.raysha.jsimpleshell.remote.model.HistoryResponse;
 import de.raysha.jsimpleshell.remote.model.InputMessage;
 import de.raysha.jsimpleshell.remote.model.MessageCataloge;
 import de.raysha.jsimpleshell.remote.model.OutputMessage;
+import de.raysha.jsimpleshell.remote.model.ReadLine;
 import de.raysha.lib.jsimpleshell.Shell;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
-import de.raysha.net.scs.AbstractConnector;
+import de.raysha.lib.jsimpleshell.io.TerminalIO;
+import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
 
 /**
@@ -27,7 +38,8 @@ public class ShellSession implements Runnable {
 	private static final Logger LOG = Logger.getLogger(ShellSession.class.getName());
 
 	private final ShellBuilder shellBuilder;
-	private final AbstractConnector connector;
+	private Shell shellSession;
+	private final Connector connector;
 	private String name;
 
 	private Thread inputThread;
@@ -38,7 +50,10 @@ public class ShellSession implements Runnable {
 	private PipedInputStream out;
 	private PipedInputStream err;
 
-	public ShellSession(ShellBuilder shellBuilder, AbstractConnector connector) {
+	private long outEntry = 0L;
+	private long errEntry = 0L;
+
+	public ShellSession(ShellBuilder shellBuilder, Connector connector) {
 		this.shellBuilder = shellBuilder;
 		this.connector = connector;
 	}
@@ -62,10 +77,9 @@ public class ShellSession implements Runnable {
 			Thread.currentThread().setName("ShellSession-" + name);
 
 			prepareConnector();
-			final Shell shell;
 
 			try {
-				shell = buildNewShell();
+				shellSession = buildNewShell();
 			} catch (Exception e) {
 				LOG.log(SEVERE, logMessage("Could not create a new shell session!"), e);
 
@@ -81,7 +95,7 @@ public class ShellSession implements Runnable {
 			initializeAndStartThreads();
 
 			try {
-				shell.commandLoop();
+				shellSession.commandLoop();
 			} catch (IOException e) {
 				LOG.log(WARNING, logMessage("The shell-session ends unexpected!"), e);
 
@@ -101,12 +115,17 @@ public class ShellSession implements Runnable {
 				LOG.log(FINE, logMessage("An error occurs on disconnecting client!"), e);
 			}
 		}finally{
+			getConsole().shutdown();
 			LOG.info(logMessage("Stop shell session."));
 		}
 	}
 
 	private void prepareConnector() {
 		MessageCataloge.registerCataloge(connector);
+	}
+
+	private ConsoleReader getConsole(){
+		return ((TerminalIO)shellSession.getSettings().getInput()).getConsole();
 	}
 
 	private Shell buildNewShell() throws IOException {
@@ -124,10 +143,49 @@ public class ShellSession implements Runnable {
 
 		synchronized (shellBuilder) {
 			shellBuilder.io()
-				.setConsole(worldIn, worldOut)
+				.setConsole(new SessionConsole(worldIn, worldOut))
 				.setError(worldErr);
 
 			return shellBuilder.build();
+		}
+	}
+
+	public class SessionConsole extends ConsoleReader {
+		public SessionConsole(InputStream in, OutputStream out) throws IOException {
+			super(in, out);
+		}
+
+		@Override
+		public String readLine(String prompt) throws IOException {
+			waitUntilOutput();
+			connector.send(new ReadLine(prompt));
+
+			return super.readLine(prompt, (char)0);
+		}
+
+		//TODO: try what happens if the user should enter a invisible input!
+
+		private static final long WAIT_CAP = 50L;
+
+		/*
+		 * Maybe this method is imprecise. If a system is fully occupied the thread
+		 * don't get any cpu-time! The usage of current time is then not meaningful!
+		 */
+		private void waitUntilOutput() {
+			long elapsedErr = System.currentTimeMillis() - errEntry;
+			long elapsedOur = System.currentTimeMillis() - outEntry;
+
+			//there is a chance that we are not at the end of output/error
+			while(elapsedErr <= WAIT_CAP || elapsedOur <= WAIT_CAP){
+				try {
+					Thread.sleep(WAIT_CAP);
+				} catch (InterruptedException e) {
+					break;
+				}
+
+				elapsedErr = System.currentTimeMillis() - errEntry;
+				elapsedOur = System.currentTimeMillis() - outEntry;
+			}
 		}
 	}
 
@@ -181,6 +239,8 @@ public class ShellSession implements Runnable {
 				try {
 					if(message instanceof InputMessage){
 						forwardInput((InputMessage)message);
+					} else if(message instanceof HistoryRequest) {
+						sendHistory();
 					} else {
 						//supported
 						connector.send(new ExceptionMessage(
@@ -194,6 +254,13 @@ public class ShellSession implements Runnable {
 					break; //connection is closed...
 				}
 			}
+
+			try {
+				in.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		private void forwardInput(InputMessage input) throws IOException {
@@ -205,6 +272,21 @@ public class ShellSession implements Runnable {
 				connector.disconnect();
 			}
 		}
+
+		private void sendHistory() throws IOException {
+			History history = getConsole().getHistory();
+			ListIterator<Entry> entries = history.entries();
+			HistoryResponse response = new HistoryResponse();
+
+			response.setHistoryLines(new ArrayList<String>(history.size()));
+
+			while(entries.hasNext()){
+				Entry entry = entries.next();
+				response.getHistoryLines().set(entry.index(), entry.value().toString());
+			}
+
+			connector.send(response);
+		}
 	};
 
 	private Runnable outputRunnable = new Runnable() {
@@ -214,6 +296,7 @@ public class ShellSession implements Runnable {
 				byte[] readBuffer = new byte[8192];
 				int read;
 				try {
+					outEntry = System.currentTimeMillis();
 					read = out.read(readBuffer);
 				} catch (IOException e) {
 					try{
@@ -235,6 +318,7 @@ public class ShellSession implements Runnable {
 					break; //connection is closed...
 				}
 			}
+
 		}
 	};
 
@@ -245,6 +329,7 @@ public class ShellSession implements Runnable {
 				byte[] readBuffer = new byte[8192];
 				int read;
 				try {
+					outEntry = System.currentTimeMillis();
 					read = err.read(readBuffer);
 				} catch (IOException e) {
 					try{

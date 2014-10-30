@@ -104,11 +104,11 @@ public class ShellServerBuilder {
 
 	private void checkPrecondition() {
 		if(settings.getSocket() == null && settings.getPort() == null){
-			throw new IllegalStateException("You have to configure the ServerSocket or a port for this server!");
+			throw new IllegalArgumentException("You must configure the ServerSocket or a port for this server!");
 		}
 
 		if(settings.getShell() == null){
-			throw new IllegalStateException("The server needs a shell!");
+			throw new IllegalArgumentException("The server needs a shell!");
 		}
 	}
 
