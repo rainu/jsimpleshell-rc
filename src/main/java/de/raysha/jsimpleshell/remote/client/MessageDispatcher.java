@@ -1,9 +1,14 @@
 package de.raysha.jsimpleshell.remote.client;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.logging.Logger;
 
 import jline.console.ConsoleReader;
-import jline.console.history.History;
 import jline.console.history.MemoryHistory;
 import de.raysha.jsimpleshell.remote.model.ErrorMessage;
 import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
@@ -15,13 +20,22 @@ import de.raysha.jsimpleshell.remote.model.ReadLine;
 import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
 
+/**
+ * This class is responsible for dispatching all incoming messages from the server.
+ *
+ * @author rainu
+ */
 class MessageDispatcher implements Runnable {
+	private static final Logger LOG = Logger.getLogger(MessageDispatcher.class.getName());
+
 	private final Connector connector;
 	private final ConsoleReader console;
+	private final OutputStream error;
 
-	MessageDispatcher(Connector connector, ConsoleReader console) {
+	MessageDispatcher(Connector connector, ConsoleReader console, OutputStream error) {
 		this.connector = connector;
 		this.console = console;
+		this.error = error;
 	}
 
 	@Override
@@ -35,27 +49,24 @@ class MessageDispatcher implements Runnable {
 				try {
 					message = connector.receive();
 				} catch (IOException e) {
-//					LOG.log(FINE, logMessage("Could not retrieve message from client!"), e);
+					LOG.log(FINE, "Could not retrieve message from server!", e);
 					break; //connection is closed...
 				}
 
-
-
-					if(message instanceof OutputMessage){
-						forwardOutput((OutputMessage)message);
-					} else if(message instanceof ErrorMessage){
-						forwardError((ErrorMessage)message);
-					} else if(message instanceof ReadLine) {
-						readLine(message);
-					} else {
-						unsupported(message);
-					}
-
+				if (message instanceof OutputMessage) {
+					forwardOutput((OutputMessage) message);
+				} else if (message instanceof ErrorMessage) {
+					forwardError((ErrorMessage) message);
+				} else if (message instanceof ReadLine) {
+					readLine(message);
+				} else {
+					unsupported(message);
+				}
 			}
 
 		} catch (IOException e) {
-			//this exception is thrown if a message could not be send to the client
-//			LOG.log(WARNING, logMessage("Could not send exception message to user!"), e);
+			//this exception is thrown if a message could not be send to the server
+			LOG.log(WARNING, "Could not send exception message to server!", e);
 
 			//connection is closed...
 		}
@@ -77,7 +88,7 @@ class MessageDispatcher implements Runnable {
 				console.getHistory().add(line);
 			}
 		}else{
-			//TODO: LOG
+			LOG.log(SEVERE, "The history can not be apply because the server sends an unexpected response!" + response);
 		}
 	}
 
@@ -114,10 +125,10 @@ class MessageDispatcher implements Runnable {
 		}
 	}
 
-	private void forwardError(ErrorMessage error) throws IOException {
+	private void forwardError(ErrorMessage errorMessage) throws IOException {
 		try{
-			System.err.write(error.getRawValue());
-			System.err.flush();
+			error.write(errorMessage.getRawValue());
+			error.flush();
 		}catch(IOException e){
 			connector.send(new ExceptionMessage("Could not forward user input! Close connection because of brocken stream!", e));
 			connector.disconnect();

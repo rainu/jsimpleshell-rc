@@ -1,19 +1,28 @@
 package de.raysha.jsimpleshell.remote.client;
 
+import static java.util.logging.Level.WARNING;
+
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.completer.NullCompleter;
 import de.raysha.jsimpleshell.remote.model.CompleteRequest;
 import de.raysha.jsimpleshell.remote.model.CompleteResponse;
-import de.raysha.jsimpleshell.remote.model.ErrorMessage;
-import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
 import de.raysha.jsimpleshell.remote.model.OutputMessage;
 import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
-import jline.console.completer.Completer;
-import jline.console.completer.NullCompleter;
 
+/**
+ * This {@link Completer} sends all requests to the server and forward his response to my {@link ConsoleReader}.
+ *
+ * @author rainu
+ */
 public class RemoteCompleter implements Completer {
+	private static final Logger LOG = Logger.getLogger(RemoteCompleter.class.getName());
+
 	private final Connector connector;
 
 	public RemoteCompleter(Connector connector) {
@@ -22,12 +31,13 @@ public class RemoteCompleter implements Completer {
 
 	@Override
 	public int complete(String buffer, int cursor, List<CharSequence> candidates) {
+		Message response = null;
+
 		try{
 			sendCompleteRequest(buffer, cursor);
-			Message response = null;
 			do{
 				response = connector.receive();
-			}while(!(response instanceof CompleteResponse) && !(response instanceof ExceptionMessage));
+			}while(response instanceof OutputMessage);	//the completer cause a output (that can we ignore)
 
 			if(response instanceof CompleteResponse){
 				CompleteResponse completeResponse = (CompleteResponse)response;
@@ -38,8 +48,7 @@ public class RemoteCompleter implements Completer {
 
 			throw new IOException("Unexpected completer response! " + response);
 		}catch(IOException e){
-			//TODO: log
-			e.printStackTrace();
+			LOG.log(WARNING, "Could not complete line because the server sends an unexpected response!" + response, e);
 		}
 
 		return new NullCompleter().complete(buffer, cursor, candidates);

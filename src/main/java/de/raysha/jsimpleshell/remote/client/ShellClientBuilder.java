@@ -2,6 +2,7 @@ package de.raysha.jsimpleshell.remote.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.security.InvalidKeyException;
@@ -26,18 +27,36 @@ public class ShellClientBuilder {
 		setError(System.err);
 	}
 
+	/**
+	 * Set the to used {@link InputStream}.
+	 *
+	 * @param in The to used {@link InputStream}
+	 * @return This {@link ShellClientBuilder} instance.
+	 */
 	public ShellClientBuilder setInput(InputStream in) {
 		settings.setIn(in);
 
 		return this;
 	}
 
+	/**
+	 * Set the to used Error-{@link OutputStream}.
+	 *
+	 * @param err The to used Error-{@link OutputStream}.
+	 * @return This {@link ShellClientBuilder} instance.
+	 */
 	public ShellClientBuilder setError(PrintStream err) {
 		settings.setErr(err);
 
 		return this;
 	}
 
+	/**
+	 * Set the to used Output-{@link OutputStream}.
+	 *
+	 * @param out The to used Output-{@link OutputStream}.
+	 * @return This {@link ShellClientBuilder} instance.
+	 */
 	public ShellClientBuilder setOuput(PrintStream out) {
 		settings.setOut(out);
 
@@ -137,6 +156,8 @@ public class ShellClientBuilder {
 		}else{
 			shellClient = new ShellClient(settings.getHost(), settings.getPort(), settings.getSecredKey(), console);
 		}
+
+		shellClient.setError(settings.getErr());
 
 		return shellClient;
 	}

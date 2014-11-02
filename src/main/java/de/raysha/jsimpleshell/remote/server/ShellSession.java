@@ -9,24 +9,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.ListIterator;
 import java.util.logging.Logger;
 
 import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.NullCompleter;
-import jline.console.history.History;
-import jline.console.history.History.Entry;
-import de.raysha.jsimpleshell.remote.model.CompleteRequest;
-import de.raysha.jsimpleshell.remote.model.CompleteResponse;
 import de.raysha.jsimpleshell.remote.model.ErrorMessage;
 import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
-import de.raysha.jsimpleshell.remote.model.HistoryRequest;
-import de.raysha.jsimpleshell.remote.model.HistoryResponse;
-import de.raysha.jsimpleshell.remote.model.InputMessage;
 import de.raysha.jsimpleshell.remote.model.MessageCataloge;
 import de.raysha.jsimpleshell.remote.model.OutputMessage;
 import de.raysha.jsimpleshell.remote.model.ReadLine;
@@ -34,7 +22,6 @@ import de.raysha.lib.jsimpleshell.Shell;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
 import de.raysha.lib.jsimpleshell.io.TerminalIO;
 import de.raysha.net.scs.Connector;
-import de.raysha.net.scs.model.Message;
 
 /**
  * This class is responsible for a shell session. For each user there is a own session.
@@ -204,7 +191,9 @@ public class ShellSession implements Runnable {
 	}
 
 	private void initializeAndStartThreads() {
-		this.inputThread = new Thread(inputRunnable, "ShellSession-Input-" + name);
+		MessageDispatcher inputDispatcher = new MessageDispatcher(in, connector, getConsole(), name);
+
+		this.inputThread = new Thread(inputDispatcher, "ShellSession-Input-" + name);
 		this.ouputThread = new Thread(outputRunnable, "ShellSession-Output-" + name);
 		this.errorThread = new Thread(errorRunnable, "ShellSession-Error-" + name);
 
@@ -229,94 +218,6 @@ public class ShellSession implements Runnable {
 			thread.stop();
 		}
 	}
-
-	private Runnable inputRunnable = new Runnable() {
-		@Override
-		public void run() {
-			while(true){
-				final Message message;
-
-				try {
-					message = connector.receive();
-				} catch (IOException e) {
-					LOG.log(FINE, logMessage("Could not retrieve message from client!"), e);
-					break; //connection is closed...
-				}
-
-
-				try {
-					if(message instanceof InputMessage){
-						forwardInput((InputMessage)message);
-					} else if(message instanceof HistoryRequest) {
-						sendHistory();
-					} else if(message instanceof CompleteRequest) {
-						sendCompleteResponse((CompleteRequest)message);
-					} else {
-						//supported
-						connector.send(new ExceptionMessage(
-								"The incoming message type (" + message.getClass().getName() + ") is not supported",
-								new IllegalArgumentException()));
-					}
-				} catch (IOException e) {
-					//this exception is thrown if a message could not be send to the client
-					LOG.log(WARNING, logMessage("Could not send exception message to user!"), e);
-
-					break; //connection is closed...
-				}
-			}
-
-			try {
-				//cause that the shellLoop will break
-				in.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		private void forwardInput(InputMessage input) throws IOException {
-			try{
-				in.write(input.getRawValue());
-				in.flush();
-			}catch(IOException e){
-				connector.send(new ExceptionMessage("Could not forward user input! Close connection because of brocken stream!", e));
-				connector.disconnect();
-			}
-		}
-
-		private void sendHistory() throws IOException {
-			History history = getConsole().getHistory();
-			ListIterator<Entry> entries = history.entries();
-			HistoryResponse response = new HistoryResponse();
-
-			response.setHistoryLines(new ArrayList<String>(history.size()));
-
-			while(entries.hasNext()){
-				Entry entry = entries.next();
-				response.getHistoryLines().set(entry.index(), entry.value().toString());
-			}
-
-			connector.send(response);
-		}
-
-		private void sendCompleteResponse(CompleteRequest request) throws IOException {
-			Collection<Completer> completers = getConsole().getCompleters();
-			final CompleteResponse response = new CompleteResponse();
-			final Completer completer;
-
-			if(completers.isEmpty()){
-				completer = new NullCompleter();
-			}else{
-				completer = completers.iterator().next();
-			}
-
-			response.setCandidates(new ArrayList<CharSequence>());
-			int index = completer.complete(request.getBuffer(), request.getCursor(), response.getCandidates());
-			response.setIndex(index);
-
-			connector.send(response);
-		}
-	};
 
 	private Runnable outputRunnable = new Runnable() {
 		@Override

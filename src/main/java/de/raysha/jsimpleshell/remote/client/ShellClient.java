@@ -1,28 +1,30 @@
 package de.raysha.jsimpleshell.remote.client;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
+import java.util.logging.Logger;
 
 import javax.crypto.SecretKey;
 
 import jline.console.ConsoleReader;
-import de.raysha.jsimpleshell.remote.model.ErrorMessage;
-import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
-import de.raysha.jsimpleshell.remote.model.InputMessage;
 import de.raysha.jsimpleshell.remote.model.MessageCataloge;
-import de.raysha.jsimpleshell.remote.model.OutputMessage;
-import de.raysha.jsimpleshell.remote.model.ReadLine;
 import de.raysha.net.scs.AESConnector;
-import de.raysha.net.scs.model.Message;
 
-
+/**
+ * This class represents the shell client. That client forward all inputs to the server and proceed
+ * his responses.
+ *
+ * @author rainu
+ */
 public class ShellClient {
+	private static final Logger LOG = Logger.getLogger(ShellClient.class.getName());
+
 	private final AESConnector connector;
 	private final ConsoleReader console;
+	private OutputStream error;
 
 	private Thread messageThread;
 
@@ -37,27 +39,29 @@ public class ShellClient {
 		MessageCataloge.registerCataloge(connector);
 	}
 
+	public void setError(OutputStream err) {
+		this.error = err;
+	}
+
 	public void start() throws IOException {
+		LOG.info("Start shell-client.");
 		initializeAndStartThreads();
 	}
 
 	public void shutdown() {
-//		LOG.info("Stop shell-server.");
+		LOG.info("Stop shell-client.");
 		stopThreads();
 	}
 
 	private void initializeAndStartThreads() {
-		MessageDispatcher dispatcher = new MessageDispatcher(connector, console);
+		MessageDispatcher dispatcher = new MessageDispatcher(connector, console, error);
 		this.messageThread = new Thread(dispatcher, "ShellSession");
 
 		this.messageThread.start();
 
 		try {
 			messageThread.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} catch (InterruptedException e) { }
 	}
 
 	private void stopThreads() {
@@ -82,4 +86,5 @@ public class ShellClient {
 		.build()
 		.start();
 	}
+
 }
