@@ -65,8 +65,6 @@ class MessageDispatcher implements Runnable {
 			try {
 				if(message instanceof InputMessage){
 					forwardInput((InputMessage)message);
-				} else if(message instanceof HistoryRequest) {
-					sendHistory();
 				} else if(message instanceof CompleteRequest) {
 					sendCompleteResponse((CompleteRequest)message);
 				} else {
@@ -94,21 +92,6 @@ class MessageDispatcher implements Runnable {
 			connector.send(new ExceptionMessage("Could not forward user input! Close connection because of brocken stream!", e));
 			connector.disconnect();
 		}
-	}
-
-	private void sendHistory() throws IOException {
-		History history = console.getHistory();
-		ListIterator<Entry> entries = history.entries();
-		HistoryResponse response = new HistoryResponse();
-
-		response.setHistoryLines(new ArrayList<String>(history.size()));
-
-		while(entries.hasNext()){
-			Entry entry = entries.next();
-			response.getHistoryLines().set(entry.index(), entry.value().toString());
-		}
-
-		connector.send(response);
 	}
 
 	private void sendCompleteResponse(CompleteRequest request) throws IOException {

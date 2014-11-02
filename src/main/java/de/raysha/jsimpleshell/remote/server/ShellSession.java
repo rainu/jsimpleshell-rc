@@ -86,6 +86,18 @@ public class ShellSession implements Runnable {
 				return;
 			}
 
+			try {
+				doHandshake();
+			} catch (IOException e) {
+				LOG.log(SEVERE, logMessage("The handshake between server and client fails! The client will be disconnected."), e);
+
+				try {
+					connector.disconnect();
+				} catch (IOException e1) { }
+
+				return;
+			}
+
 			initializeAndStartThreads();
 
 			try {
@@ -113,6 +125,10 @@ public class ShellSession implements Runnable {
 
 			LOG.info(logMessage("Stop shell session."));
 		}
+	}
+
+	private void doHandshake() throws IOException {
+		new Handshaker(connector, getConsole()).doHandshake();
 	}
 
 	private void prepareConnector() {

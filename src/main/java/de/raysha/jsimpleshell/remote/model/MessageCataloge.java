@@ -24,6 +24,7 @@ public final class MessageCataloge {
 		connector.registerSerializer(HistoryResponse.class, new HistoryResponse.Serializer());
 		connector.registerSerializer(CompleteRequest.class, new CompleteRequest.Serializer());
 		connector.registerSerializer(CompleteResponse.class, new CompleteResponse.Serializer());
+		connector.registerSerializer(HandshakeEnd.class, new HandshakeEnd.Serializer());
 	}
 
 }

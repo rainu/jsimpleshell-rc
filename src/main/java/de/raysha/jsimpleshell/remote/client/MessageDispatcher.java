@@ -12,6 +12,7 @@ import jline.console.ConsoleReader;
 import jline.console.history.MemoryHistory;
 import de.raysha.jsimpleshell.remote.model.ErrorMessage;
 import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
+import de.raysha.jsimpleshell.remote.model.HandshakeEnd;
 import de.raysha.jsimpleshell.remote.model.HistoryRequest;
 import de.raysha.jsimpleshell.remote.model.HistoryResponse;
 import de.raysha.jsimpleshell.remote.model.InputMessage;
@@ -75,6 +76,8 @@ class MessageDispatcher implements Runnable {
 	private void prepareConsole() throws IOException {
 		applyHistory();
 		applyCompleter();
+
+		connector.send(new HandshakeEnd());
 	}
 
 	private void applyHistory() throws IOException {
