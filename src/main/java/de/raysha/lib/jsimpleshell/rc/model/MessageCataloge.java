@@ -1,6 +1,6 @@
 package de.raysha.lib.jsimpleshell.rc.model;
 
-import de.raysha.net.scs.Connector;
+import de.raysha.lib.net.scs.Connector;
 
 /**
  * This class holds the hole message-registry.

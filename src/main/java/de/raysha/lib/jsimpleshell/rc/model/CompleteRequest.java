@@ -2,8 +2,8 @@ package de.raysha.lib.jsimpleshell.rc.model;
 
 import java.io.Serializable;
 
-import de.raysha.net.scs.model.Message;
-import de.raysha.net.scs.model.serialize.ObjectSerializer;
+import de.raysha.lib.net.scs.model.Message;
+import de.raysha.lib.net.scs.model.serialize.ObjectSerializer;
 
 public class CompleteRequest implements Message, Serializable {
 	private static final long serialVersionUID = 3741728881047940018L;

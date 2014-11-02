@@ -12,8 +12,8 @@ import jline.console.completer.NullCompleter;
 import de.raysha.lib.jsimpleshell.rc.model.CompleteRequest;
 import de.raysha.lib.jsimpleshell.rc.model.CompleteResponse;
 import de.raysha.lib.jsimpleshell.rc.model.OutputMessage;
-import de.raysha.net.scs.Connector;
-import de.raysha.net.scs.model.Message;
+import de.raysha.lib.net.scs.Connector;
+import de.raysha.lib.net.scs.model.Message;
 
 /**
  * This {@link Completer} sends all requests to the server and forward his response to my {@link ConsoleReader}.

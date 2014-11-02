@@ -10,7 +10,7 @@ import java.security.InvalidKeyException;
 import javax.crypto.SecretKey;
 
 import jline.console.ConsoleReader;
-import de.raysha.net.scs.AESConnector;
+import de.raysha.lib.net.scs.AESConnector;
 
 /**
  * This class is responsible for building a {@link ShellClient}.

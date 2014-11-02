@@ -11,8 +11,8 @@ import de.raysha.lib.jsimpleshell.rc.model.ExceptionMessage;
 import de.raysha.lib.jsimpleshell.rc.model.HandshakeEnd;
 import de.raysha.lib.jsimpleshell.rc.model.HistoryRequest;
 import de.raysha.lib.jsimpleshell.rc.model.HistoryResponse;
-import de.raysha.net.scs.Connector;
-import de.raysha.net.scs.model.Message;
+import de.raysha.lib.net.scs.Connector;
+import de.raysha.lib.net.scs.model.Message;
 
 /**
  * This class is responsible to handle the initial handshake of client and server.

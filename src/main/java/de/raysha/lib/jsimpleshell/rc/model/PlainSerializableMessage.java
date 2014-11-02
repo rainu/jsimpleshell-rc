@@ -2,7 +2,7 @@ package de.raysha.lib.jsimpleshell.rc.model;
 
 import java.io.Serializable;
 
-import de.raysha.net.scs.model.Message;
+import de.raysha.lib.net.scs.model.Message;
 
 public abstract class PlainSerializableMessage implements Message, Serializable {
 	private static final long serialVersionUID = 7377915709114710618L;

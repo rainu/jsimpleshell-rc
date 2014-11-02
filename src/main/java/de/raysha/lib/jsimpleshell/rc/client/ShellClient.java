@@ -11,7 +11,7 @@ import javax.crypto.SecretKey;
 
 import jline.console.ConsoleReader;
 import de.raysha.lib.jsimpleshell.rc.model.MessageCataloge;
-import de.raysha.net.scs.AESConnector;
+import de.raysha.lib.net.scs.AESConnector;
 
 /**
  * This class represents the shell client. That client forward all inputs to the server and proceed

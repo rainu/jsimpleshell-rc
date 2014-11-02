@@ -21,8 +21,8 @@ import de.raysha.lib.jsimpleshell.rc.model.ExceptionMessage;
 import de.raysha.lib.jsimpleshell.rc.model.HistoryRequest;
 import de.raysha.lib.jsimpleshell.rc.model.HistoryResponse;
 import de.raysha.lib.jsimpleshell.rc.model.InputMessage;
-import de.raysha.net.scs.Connector;
-import de.raysha.net.scs.model.Message;
+import de.raysha.lib.net.scs.Connector;
+import de.raysha.lib.net.scs.model.Message;
 
 /**
  * This class is responsible for dispatching all input-messages that come from the client.

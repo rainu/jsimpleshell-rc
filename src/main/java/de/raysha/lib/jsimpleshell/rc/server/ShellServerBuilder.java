@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 
 import de.raysha.lib.jsimpleshell.Shell;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
-import de.raysha.net.scs.AESConnector;
+import de.raysha.lib.net.scs.AESConnector;
 
 /**
  * This class is responsible for building a {@link ShellServer}.

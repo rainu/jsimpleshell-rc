@@ -18,8 +18,8 @@ import de.raysha.lib.jsimpleshell.rc.model.HistoryResponse;
 import de.raysha.lib.jsimpleshell.rc.model.InputMessage;
 import de.raysha.lib.jsimpleshell.rc.model.OutputMessage;
 import de.raysha.lib.jsimpleshell.rc.model.ReadLine;
-import de.raysha.net.scs.Connector;
-import de.raysha.net.scs.model.Message;
+import de.raysha.lib.net.scs.Connector;
+import de.raysha.lib.net.scs.model.Message;
 
 /**
  * This class is responsible for dispatching all incoming messages from the server.

@@ -1,7 +1,7 @@
 package de.raysha.lib.jsimpleshell.rc.model;
 
-import de.raysha.net.scs.model.Message;
-import de.raysha.net.scs.model.serialize.ObjectSerializer;
+import de.raysha.lib.net.scs.model.Message;
+import de.raysha.lib.net.scs.model.serialize.ObjectSerializer;
 
 /**
  * This {@link Message} contains the error content of a shell.

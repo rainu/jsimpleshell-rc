@@ -2,8 +2,8 @@ package de.raysha.lib.jsimpleshell.rc.model;
 
 import java.io.Serializable;
 
-import de.raysha.net.scs.model.Message;
-import de.raysha.net.scs.model.serialize.MessageSerializer;
+import de.raysha.lib.net.scs.model.Message;
+import de.raysha.lib.net.scs.model.serialize.MessageSerializer;
 
 public class HistoryRequest implements Message, Serializable {
 	private static final long serialVersionUID = -4380053140941644871L;

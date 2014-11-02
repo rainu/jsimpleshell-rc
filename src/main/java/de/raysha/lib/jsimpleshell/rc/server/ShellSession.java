@@ -21,7 +21,7 @@ import de.raysha.lib.jsimpleshell.rc.model.ExceptionMessage;
 import de.raysha.lib.jsimpleshell.rc.model.MessageCataloge;
 import de.raysha.lib.jsimpleshell.rc.model.OutputMessage;
 import de.raysha.lib.jsimpleshell.rc.model.ReadLine;
-import de.raysha.net.scs.Connector;
+import de.raysha.lib.net.scs.Connector;
 
 /**
  * This class is responsible for a shell session. For each user there is a own session.

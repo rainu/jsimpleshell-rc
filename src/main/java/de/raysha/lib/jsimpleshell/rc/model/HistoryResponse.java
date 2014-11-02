@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.raysha.net.scs.model.Message;
-import de.raysha.net.scs.model.serialize.ObjectSerializer;
+import de.raysha.lib.net.scs.model.Message;
+import de.raysha.lib.net.scs.model.serialize.ObjectSerializer;
 
 public class HistoryResponse implements Message, Serializable {
 	private static final long serialVersionUID = 826592141139292837L;

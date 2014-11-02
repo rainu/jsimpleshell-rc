@@ -11,8 +11,8 @@ import javax.crypto.SecretKey;
 
 import de.raysha.lib.jsimpleshell.Shell;
 import de.raysha.lib.jsimpleshell.builder.ShellBuilder;
-import de.raysha.net.scs.AESConnector;
-import de.raysha.net.scs.AESServer;
+import de.raysha.lib.net.scs.AESConnector;
+import de.raysha.lib.net.scs.AESServer;
 
 /**
  * This class establish a server socket and listening for incoming connections.
