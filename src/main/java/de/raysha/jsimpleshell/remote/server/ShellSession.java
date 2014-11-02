@@ -153,25 +153,41 @@ public class ShellSession implements Runnable {
 		@Override
 		public String readLine(String prompt) throws IOException {
 			waitUntilOutput();
+
 			connector.send(new ReadLine(prompt));
 
 			return super.readLine(prompt, (char)0);
 		}
 
+		@Override
+		public String readLine(String prompt, Character mask) throws IOException {
+			waitUntilOutput();
+
+			connector.send(new ReadLine(prompt, mask));
+
+			return super.readLine(prompt, mask);
+		}
+
 		//TODO: try what happens if the user should enter a invisible input!
 
-		private static final long WAIT_CAP = 50L;
+		private static final long WAIT_CAP = 25L;
 
 		/*
 		 * Maybe this method is imprecise. If a system is fully occupied the thread
 		 * don't get any cpu-time! The usage of current time is then not meaningful!
 		 */
 		private void waitUntilOutput() {
+			try {
+				Thread.sleep(WAIT_CAP);
+			} catch (InterruptedException e) {
+				return;
+			}
+
 			long elapsedErr = System.currentTimeMillis() - errEntry;
-			long elapsedOur = System.currentTimeMillis() - outEntry;
+			long elapsedOut = System.currentTimeMillis() - outEntry;
 
 			//there is a chance that we are not at the end of output/error
-			while(elapsedErr <= WAIT_CAP || elapsedOur <= WAIT_CAP){
+			while(elapsedErr <= WAIT_CAP || elapsedOut <= WAIT_CAP){
 				try {
 					Thread.sleep(WAIT_CAP);
 				} catch (InterruptedException e) {
@@ -179,8 +195,11 @@ public class ShellSession implements Runnable {
 				}
 
 				elapsedErr = System.currentTimeMillis() - errEntry;
-				elapsedOur = System.currentTimeMillis() - outEntry;
+				elapsedOut = System.currentTimeMillis() - outEntry;
 			}
+
+			outEntry = System.currentTimeMillis();
+			errEntry = outEntry;
 		}
 	}
 
@@ -259,7 +278,7 @@ public class ShellSession implements Runnable {
 				byte[] readBuffer = new byte[8192];
 				int read;
 				try {
-					outEntry = System.currentTimeMillis();
+					errEntry = System.currentTimeMillis();
 					read = err.read(readBuffer);
 				} catch (IOException e) {
 					try{

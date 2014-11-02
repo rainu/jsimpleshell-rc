@@ -58,7 +58,7 @@ class MessageDispatcher implements Runnable {
 				} else if (message instanceof ErrorMessage) {
 					forwardError((ErrorMessage) message);
 				} else if (message instanceof ReadLine) {
-					readLine(message);
+					readLine((ReadLine)message);
 				} else {
 					unsupported(message);
 				}
@@ -100,9 +100,16 @@ class MessageDispatcher implements Runnable {
 		connector.send(new HistoryRequest());
 	}
 
-	private void readLine(final Message message) throws IOException {
-		console.setPrompt(((ReadLine)message).getPrompt());
-		String line = console.readLine();
+	private void readLine(final ReadLine message) throws IOException {
+		console.setPrompt(message.getPrompt());
+
+		String line;
+		if(message.getMask() != null){
+			line = console.readLine(message.getMask());
+		}else{
+			line = console.readLine();
+		}
+
 		connector.send(new InputMessage(line + "\n"));
 	}
 
