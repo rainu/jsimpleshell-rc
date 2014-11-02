@@ -1,6 +1,8 @@
 package de.raysha.jsimpleshell.remote.server;
 
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,12 +11,17 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.ListIterator;
 import java.util.logging.Logger;
 
 import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.completer.NullCompleter;
 import jline.console.history.History;
 import jline.console.history.History.Entry;
+import de.raysha.jsimpleshell.remote.model.CompleteRequest;
+import de.raysha.jsimpleshell.remote.model.CompleteResponse;
 import de.raysha.jsimpleshell.remote.model.ErrorMessage;
 import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
 import de.raysha.jsimpleshell.remote.model.HistoryRequest;
@@ -115,7 +122,8 @@ public class ShellSession implements Runnable {
 				LOG.log(FINE, logMessage("An error occurs on disconnecting client!"), e);
 			}
 		}finally{
-			getConsole().shutdown();
+			try{ getConsole().shutdown(); } catch(Exception e) {}
+
 			LOG.info(logMessage("Stop shell session."));
 		}
 	}
@@ -241,6 +249,8 @@ public class ShellSession implements Runnable {
 						forwardInput((InputMessage)message);
 					} else if(message instanceof HistoryRequest) {
 						sendHistory();
+					} else if(message instanceof CompleteRequest) {
+						sendCompleteResponse((CompleteRequest)message);
 					} else {
 						//supported
 						connector.send(new ExceptionMessage(
@@ -256,6 +266,7 @@ public class ShellSession implements Runnable {
 			}
 
 			try {
+				//cause that the shellLoop will break
 				in.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -284,6 +295,24 @@ public class ShellSession implements Runnable {
 				Entry entry = entries.next();
 				response.getHistoryLines().set(entry.index(), entry.value().toString());
 			}
+
+			connector.send(response);
+		}
+
+		private void sendCompleteResponse(CompleteRequest request) throws IOException {
+			Collection<Completer> completers = getConsole().getCompleters();
+			final CompleteResponse response = new CompleteResponse();
+			final Completer completer;
+
+			if(completers.isEmpty()){
+				completer = new NullCompleter();
+			}else{
+				completer = completers.iterator().next();
+			}
+
+			response.setCandidates(new ArrayList<CharSequence>());
+			int index = completer.complete(request.getBuffer(), request.getCursor(), response.getCandidates());
+			response.setIndex(index);
 
 			connector.send(response);
 		}

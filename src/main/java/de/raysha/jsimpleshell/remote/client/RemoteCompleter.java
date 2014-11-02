@@ -5,6 +5,9 @@ import java.util.List;
 
 import de.raysha.jsimpleshell.remote.model.CompleteRequest;
 import de.raysha.jsimpleshell.remote.model.CompleteResponse;
+import de.raysha.jsimpleshell.remote.model.ErrorMessage;
+import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
+import de.raysha.jsimpleshell.remote.model.OutputMessage;
 import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
 import jline.console.completer.Completer;
@@ -21,7 +24,11 @@ public class RemoteCompleter implements Completer {
 	public int complete(String buffer, int cursor, List<CharSequence> candidates) {
 		try{
 			sendCompleteRequest(buffer, cursor);
-			Message response = connector.receive();
+			Message response = null;
+			do{
+				response = connector.receive();
+			}while(!(response instanceof CompleteResponse) && !(response instanceof ExceptionMessage));
+
 			if(response instanceof CompleteResponse){
 				CompleteResponse completeResponse = (CompleteResponse)response;
 
