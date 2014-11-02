@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.model;
+package de.raysha.lib.jsimpleshell.rc.model;
 
 import de.raysha.net.scs.model.Message;
 import de.raysha.net.scs.model.serialize.MessageSerializer;

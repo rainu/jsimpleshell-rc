@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.server;
+package de.raysha.lib.jsimpleshell.rc.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,10 +7,10 @@ import java.util.ListIterator;
 import jline.console.ConsoleReader;
 import jline.console.history.History;
 import jline.console.history.History.Entry;
-import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
-import de.raysha.jsimpleshell.remote.model.HandshakeEnd;
-import de.raysha.jsimpleshell.remote.model.HistoryRequest;
-import de.raysha.jsimpleshell.remote.model.HistoryResponse;
+import de.raysha.lib.jsimpleshell.rc.model.ExceptionMessage;
+import de.raysha.lib.jsimpleshell.rc.model.HandshakeEnd;
+import de.raysha.lib.jsimpleshell.rc.model.HistoryRequest;
+import de.raysha.lib.jsimpleshell.rc.model.HistoryResponse;
 import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
 

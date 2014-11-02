@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.client;
+package de.raysha.lib.jsimpleshell.rc.client;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
@@ -10,14 +10,14 @@ import java.util.logging.Logger;
 
 import jline.console.ConsoleReader;
 import jline.console.history.MemoryHistory;
-import de.raysha.jsimpleshell.remote.model.ErrorMessage;
-import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
-import de.raysha.jsimpleshell.remote.model.HandshakeEnd;
-import de.raysha.jsimpleshell.remote.model.HistoryRequest;
-import de.raysha.jsimpleshell.remote.model.HistoryResponse;
-import de.raysha.jsimpleshell.remote.model.InputMessage;
-import de.raysha.jsimpleshell.remote.model.OutputMessage;
-import de.raysha.jsimpleshell.remote.model.ReadLine;
+import de.raysha.lib.jsimpleshell.rc.model.ErrorMessage;
+import de.raysha.lib.jsimpleshell.rc.model.ExceptionMessage;
+import de.raysha.lib.jsimpleshell.rc.model.HandshakeEnd;
+import de.raysha.lib.jsimpleshell.rc.model.HistoryRequest;
+import de.raysha.lib.jsimpleshell.rc.model.HistoryResponse;
+import de.raysha.lib.jsimpleshell.rc.model.InputMessage;
+import de.raysha.lib.jsimpleshell.rc.model.OutputMessage;
+import de.raysha.lib.jsimpleshell.rc.model.ReadLine;
 import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
 

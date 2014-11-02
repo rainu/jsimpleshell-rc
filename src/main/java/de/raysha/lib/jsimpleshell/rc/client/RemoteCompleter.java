@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.client;
+package de.raysha.lib.jsimpleshell.rc.client;
 
 import static java.util.logging.Level.WARNING;
 
@@ -9,9 +9,9 @@ import java.util.logging.Logger;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.NullCompleter;
-import de.raysha.jsimpleshell.remote.model.CompleteRequest;
-import de.raysha.jsimpleshell.remote.model.CompleteResponse;
-import de.raysha.jsimpleshell.remote.model.OutputMessage;
+import de.raysha.lib.jsimpleshell.rc.model.CompleteRequest;
+import de.raysha.lib.jsimpleshell.rc.model.CompleteResponse;
+import de.raysha.lib.jsimpleshell.rc.model.OutputMessage;
 import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
 

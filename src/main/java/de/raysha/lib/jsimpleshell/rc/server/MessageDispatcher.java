@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.server;
+package de.raysha.lib.jsimpleshell.rc.server;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
@@ -15,12 +15,12 @@ import jline.console.completer.Completer;
 import jline.console.completer.NullCompleter;
 import jline.console.history.History;
 import jline.console.history.History.Entry;
-import de.raysha.jsimpleshell.remote.model.CompleteRequest;
-import de.raysha.jsimpleshell.remote.model.CompleteResponse;
-import de.raysha.jsimpleshell.remote.model.ExceptionMessage;
-import de.raysha.jsimpleshell.remote.model.HistoryRequest;
-import de.raysha.jsimpleshell.remote.model.HistoryResponse;
-import de.raysha.jsimpleshell.remote.model.InputMessage;
+import de.raysha.lib.jsimpleshell.rc.model.CompleteRequest;
+import de.raysha.lib.jsimpleshell.rc.model.CompleteResponse;
+import de.raysha.lib.jsimpleshell.rc.model.ExceptionMessage;
+import de.raysha.lib.jsimpleshell.rc.model.HistoryRequest;
+import de.raysha.lib.jsimpleshell.rc.model.HistoryResponse;
+import de.raysha.lib.jsimpleshell.rc.model.InputMessage;
 import de.raysha.net.scs.Connector;
 import de.raysha.net.scs.model.Message;
 

@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.model;
+package de.raysha.lib.jsimpleshell.rc.model;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.client;
+package de.raysha.lib.jsimpleshell.rc.client;
 
 import java.io.IOException;
 import java.io.InputStream;

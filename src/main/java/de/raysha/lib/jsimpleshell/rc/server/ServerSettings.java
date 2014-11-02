@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.server;
+package de.raysha.lib.jsimpleshell.rc.server;
 
 import java.net.ServerSocket;
 

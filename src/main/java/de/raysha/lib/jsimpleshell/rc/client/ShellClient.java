@@ -1,4 +1,4 @@
-package de.raysha.jsimpleshell.remote.client;
+package de.raysha.lib.jsimpleshell.rc.client;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import javax.crypto.SecretKey;
 
 import jline.console.ConsoleReader;
-import de.raysha.jsimpleshell.remote.model.MessageCataloge;
+import de.raysha.lib.jsimpleshell.rc.model.MessageCataloge;
 import de.raysha.net.scs.AESConnector;
 
 /**
