@@ -99,7 +99,7 @@ class MessageDispatcher implements Runnable {
 		try{
 			String sOutput = new String(output.getRawValue());
 
-			if(console.getPrompt().equals(sOutput) ||
+			if(sOutput.equals(console.getPrompt()) ||
 				"\n".equals(sOutput)){
 
 				//skip this one...
