@@ -39,4 +39,8 @@ public abstract class IntegrationsTest {
 	public static void stopServer(){
 		server.shutdown();
 	}
+
+	protected ShellClientHandle createShellHandle() throws InvalidKeyException, IOException{
+		return new ShellClientHandle("localhost", PORT, SECRET);
+	}
 }

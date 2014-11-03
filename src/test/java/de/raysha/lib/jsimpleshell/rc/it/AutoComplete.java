@@ -1,6 +1,7 @@
 package de.raysha.lib.jsimpleshell.rc.it;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -13,8 +14,7 @@ import de.raysha.jsimpleshell.remote.IntegrationsTest;
 import de.raysha.jsimpleshell.remote.Result;
 import de.raysha.jsimpleshell.remote.ShellClientHandle;
 
-public class Basics extends IntegrationsTest {
-
+public class AutoComplete extends IntegrationsTest {
 	ShellClientHandle handle;
 
 	@Before
@@ -28,12 +28,14 @@ public class Basics extends IntegrationsTest {
 	}
 
 	@Test
-	public void showHelp() throws IOException{
-		handle.enterLine("?help");
+	public void autoComplete() throws IOException{
+		handle.enterLine("?\t");
 
 		final Result result = handle.waitUntilResponse();
 
 		assertFalse(result.isError());
-		assertTrue(result.toString(), result.getOut().contains("JSimpleShell"));
+		assertTrue(result.toString(), result.getOut().contains("?help"));
+		assertTrue(result.toString(), result.getOut().contains("?list"));
+		assertTrue(result.toString(), result.getOut().contains("?list-all"));
 	}
 }

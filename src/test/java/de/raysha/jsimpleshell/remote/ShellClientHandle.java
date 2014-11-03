@@ -60,11 +60,13 @@ public class ShellClientHandle {
 		client.shutdown();
 	}
 
-	public void enterLine(String userInput) throws IOException{
-		userInput += "\n";
-
+	public void enter(String userInput) throws IOException{
 		in.write(userInput.getBytes());
 		in.flush();
+	}
+
+	public void enterLine(String userInput) throws IOException{
+		enter(userInput + "\n");
 	}
 
 	public Result waitUntilResponse(){
