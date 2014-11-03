@@ -78,13 +78,4 @@ public class ShellClient {
 			thread.stop();
 		}
 	}
-
-	public static void main(String[] args) throws InvalidKeyException, UnknownHostException, IOException {
-		new ShellClientBuilder()
-			.setTargetEndpoint("localhost", 1312)
-			.setPassword("secret")
-		.build()
-		.start();
-	}
-
 }
